@@ -1,17 +1,17 @@
 use std::error::Error;
-use std::fmt;
+use std::{fmt, fmt::Debug, fmt::Display};
 
 pub struct KrakenError {
     errors: Vec<String>,
 }
 
-impl fmt::Display for KrakenError {
+impl Display for KrakenError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Errors: {}", self.errors.join("\n"))
     }
 }
 
-impl fmt::Debug for KrakenError {
+impl Debug for KrakenError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.errors.join("\n"))
     }

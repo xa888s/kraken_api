@@ -9,7 +9,6 @@ type HmacSha512 = Hmac<Sha512>;
 pub fn get_inner_sign(path: &str, data: Value, nonce: u64) -> Result<Vec<u8>, GenError> {
     let nonce = nonce.to_string();
     let input = [nonce, data.to_string()].concat();
-    dbg!(&input);
     let bytes = input.as_bytes();
 
     let hashed = Sha256::digest(bytes).to_vec();
@@ -26,6 +25,5 @@ pub fn get_sign(key: &str, input: Vec<u8>) -> Result<String, GenError> {
     let result = mac.result();
     let code = result.code().to_vec();
     let res = base64::encode(&code);
-    dbg!(&res);
     Ok(res)
 }
