@@ -14,6 +14,6 @@ fn main() {
     
     let kraken = Kraken::new(key, secret, totp);
 
-    kraken.start();
+    kraken.start().await;
 }
 ```
