@@ -3,6 +3,16 @@ name = "kraken_api"
 version = "0.1.0"
 authors = ["abyss <derribado@tutanota.com>"]
 edition = "2018"
+description = """
+kraken_api is a library for using both the public and private kraken.com APIs.
+It is currently a work in progress.
+"""
+homepage = "https://git.cryptid.cc/lost/kraken_api"
+repository = "https://git.cryptid.cc/lost/kraken_api"
+documentation = "https://docs.rs/kraken_api"
+readme = "README.md"
+keywords = ["kraken", "api"]
+categories = ["api"]
 
 [dependencies]
 serde = { version = "1.0.110", features = ["derive"] }
