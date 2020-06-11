@@ -1,7 +1,5 @@
 use crate::crypto;
 use crate::error::KrakenError;
-use crate::json;
-use crate::json::Value;
 use crate::log::info;
 use crate::GenError;
 use async_trait::async_trait;
@@ -31,8 +29,8 @@ impl KrakenResponse {
 }
 
 pub struct Kraken {
-    token: String,
-    sign: String,
+    token: Option<String>,
+    sign: Option<String>,
     nonce: u64,
     secret: String,
     key: String,
@@ -45,48 +43,50 @@ impl Kraken {
             key,
             secret,
             totp,
-            sign: String::new(),
+            sign: None,
             nonce: Kraken::get_nonce(),
-            token: String::new(),
+            token: None,
         }
     }
 
     pub async fn start(mut self) -> Result<Self, GenError> {
-        let inner_sign = crypto::get_inner_sign(Self::TOKEN_URL, self.get_json()?, self.nonce)?;
-        self.sign = crypto::get_sign(&self.key, inner_sign)?;
+        let inner_sign = crypto::get_inner_sign(Self::TOKEN_URL, self.get_formdata(), self.nonce)?;
+        self.sign = Some(crypto::get_sign(&self.key, inner_sign)?);
 
         self.get_token().await?;
-        info!("Set token to: {}", &self.token);
+        info!("Set token to: {}", &self.token.as_ref().unwrap());
         Ok(self)
     }
 
     // TODO: fix invalid signature response
     async fn get_token(&mut self) -> Result<(), GenError> {
-        let post_json = self.get_json()?;
+        let post_data = self.get_formdata();
 
-        let res = self.get_res(post_json).await?.to_result()?;
+        let res = self.get_res(post_data).await?.to_result()?;
 
-        self.token = res;
+        self.token = Some(res);
         Ok(())
     }
 
-    async fn get_res(&self, json: Value) -> Result<KrakenResponse, GenError> {
+    async fn get_res(&self, data: String) -> Result<KrakenResponse, GenError> {
         let res = surf::post(Self::TOKEN_URL)
             .set_header("API-Key", &self.secret)
-            .set_header("API-Sign", &self.sign)
-            .body_json(&json)?
+            .set_header("API-Sign", &self.sign.as_ref().unwrap())
+            .body_string(data)
             .await?
             .body_json()
             .await?;
         Ok(res)
     }
 
-    fn get_json(&self) -> Result<Value, GenError> {
-        info!("Creating output json");
-        Ok(json!({
-            "nonce": self.nonce,
-            "otp": self.get_auth(),
-        }))
+    fn get_formdata(&self) -> String {
+        info!("Creating output formdata");
+        format!(
+            "nonce={}\notp={}
+            ",
+            self.nonce,
+            self.get_auth()
+        )
     }
 
     fn get_auth(&self) -> String {

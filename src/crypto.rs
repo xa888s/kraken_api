@@ -1,4 +1,3 @@
-use crate::json::Value;
 use crate::GenError;
 use base64;
 use hmac::{Hmac, Mac};
@@ -6,9 +5,9 @@ use sha2::{Digest, Sha256, Sha512};
 
 type HmacSha512 = Hmac<Sha512>;
 
-pub fn get_inner_sign(path: &str, data: Value, nonce: u64) -> Result<Vec<u8>, GenError> {
+pub fn get_inner_sign(path: &str, data: String, nonce: u64) -> Result<Vec<u8>, GenError> {
     let nonce = nonce.to_string();
-    let input = [nonce, data.to_string()].concat();
+    let input = [nonce, data].concat();
     let bytes = input.as_bytes();
 
     let hashed = Sha256::digest(bytes).to_vec();

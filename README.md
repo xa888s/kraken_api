@@ -5,15 +5,17 @@ This is a library that provides access to the kraken.com APIs.
 
 # Usage
 ```rust
+use std::error::Error;
 use kraken_api::api::Kraken;
 
-fn main() {
+#[runtime::main]
+async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // code to get key, secret and totp goes here
     // ......
     // ......
     
     let kraken = Kraken::new(key, secret, totp);
 
-    kraken.start().await;
+    kraken.start().await?;
 }
 ```
