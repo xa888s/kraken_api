@@ -82,7 +82,7 @@ impl Kraken {
     fn get_formdata(&self) -> String {
         info!("Creating output formdata");
         format!(
-            "nonce={}\notp={}
+            "nonce={}&otp={}
             ",
             self.nonce,
             self.get_auth()
