@@ -9,7 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 #[async_trait]
 trait SecureExchange {
-    const TOKEN_URL: &'static str;
+    const BASE_URL: &'static str;
 }
 
 #[derive(Deserialize, Serialize)]
@@ -38,6 +38,8 @@ pub struct Kraken {
 }
 
 impl Kraken {
+    const TOKEN_PATH: &'static str = "/0/private/GetWebSocketsToken";
+
     pub fn new(key: String, secret: String, totp: String) -> Self {
         Kraken {
             key,
@@ -50,7 +52,7 @@ impl Kraken {
     }
 
     pub async fn start(mut self) -> Result<Self, GenError> {
-        let inner_sign = crypto::get_inner_sign(Self::TOKEN_URL, self.get_formdata(), self.nonce)?;
+        let inner_sign = crypto::get_inner_sign(Self::TOKEN_PATH, self.get_formdata(), self.nonce)?;
         self.sign = Some(crypto::get_sign(&self.key, inner_sign)?);
 
         self.get_token().await?;
@@ -69,7 +71,7 @@ impl Kraken {
     }
 
     async fn get_res(&self, data: String) -> Result<KrakenResponse, GenError> {
-        let res = surf::post(Self::TOKEN_URL)
+        let res = surf::post([Self::BASE_URL, Self::TOKEN_PATH].concat())
             .set_header("API-Key", &self.secret)
             .set_header("API-Sign", &self.sign.as_ref().unwrap())
             .body_string(data)
@@ -107,5 +109,5 @@ impl Kraken {
 }
 
 impl SecureExchange for Kraken {
-    const TOKEN_URL: &'static str = "https://api.kraken.com/0/private/GetWebSocketsToken";
+    const BASE_URL: &'static str = "https://api.kraken.com";
 }
