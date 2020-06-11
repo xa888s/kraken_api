@@ -28,6 +28,12 @@ impl KrakenResponse {
     }
 }
 
+#[derive(Deserialize, Serialize)]
+struct FormData {
+    nonce: u64,
+    otp: String,
+}
+
 pub struct Kraken {
     token: Option<String>,
     sign: Option<String>,
@@ -52,7 +58,11 @@ impl Kraken {
     }
 
     pub async fn start(mut self) -> Result<Self, GenError> {
-        let inner_sign = crypto::get_inner_sign(Self::TOKEN_PATH, self.get_formdata(), self.nonce)?;
+        let inner_sign = crypto::get_inner_sign(
+            Self::TOKEN_PATH,
+            serde_urlencoded::to_string(self.get_formdata())?,
+            self.nonce,
+        )?;
         self.sign = Some(crypto::get_sign(&self.key, inner_sign)?);
 
         self.get_token().await?;
@@ -70,25 +80,23 @@ impl Kraken {
         Ok(())
     }
 
-    async fn get_res(&self, data: String) -> Result<KrakenResponse, GenError> {
+    async fn get_res(&self, data: FormData) -> Result<KrakenResponse, GenError> {
         let res = surf::post([Self::BASE_URL, Self::TOKEN_PATH].concat())
             .set_header("API-Key", &self.secret)
             .set_header("API-Sign", &self.sign.as_ref().unwrap())
-            .body_string(data)
+            .body_form(&data)?
             .await?
             .body_json()
             .await?;
         Ok(res)
     }
 
-    fn get_formdata(&self) -> String {
+    fn get_formdata(&self) -> FormData {
         info!("Creating output formdata");
-        format!(
-            "nonce={}&otp={}
-            ",
-            self.nonce,
-            self.get_auth()
-        )
+        FormData {
+            nonce: self.nonce,
+            otp: self.get_auth(),
+        }
     }
 
     fn get_auth(&self) -> String {

@@ -1,6 +1,6 @@
 [package]
 name = "kraken_api"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["abyss <derribado@tutanota.com>"]
 edition = "2018"
 description = """
@@ -26,3 +26,4 @@ base64 = "0.12.1"
 hmac = "0.7.1"
 sha2 = "0.8.2"
 surf = "1.0.3"
+serde_urlencoded = "0.6.1"
