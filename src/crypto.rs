@@ -10,9 +10,9 @@ pub fn get_inner_sign(path: &str, data: String, nonce: u64) -> Result<Vec<u8>, G
     let input = [nonce, data].concat();
     let bytes = input.as_bytes();
 
-    let hashed = Sha256::digest(bytes).to_vec();
+    let hashed: [u8; 32] = Sha256::digest(bytes).into();
 
-    let res = [path.as_bytes().to_vec(), hashed].concat();
+    let res = [path.as_bytes(), &hashed].concat();
     Ok(res)
 }
 

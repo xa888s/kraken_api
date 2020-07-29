@@ -44,9 +44,13 @@ pub struct Kraken {
 }
 
 impl Kraken {
-    const TOKEN_PATH: &'static str = "/0/private/GetWebSocketsToken";
+    const TOKEN_PATH: &'static str = "/private/GetWebSocketsToken";
+    const API_VERSION: &'static str = "/0";
 
     pub fn new(key: String, secret: String, totp: String) -> Self {
+        info!("Set key to: {}", &key);
+        info!("Set secret to: {}", &secret);
+        info!("Set totp to: {}", &totp);
         Kraken {
             key,
             secret,
@@ -81,7 +85,7 @@ impl Kraken {
     }
 
     async fn get_res(&self, data: FormData) -> Result<KrakenResponse, GenError> {
-        let res = surf::post([Self::BASE_URL, Self::TOKEN_PATH].concat())
+        let res = surf::post([Self::BASE_URL, Self::API_VERSION, Self::TOKEN_PATH].concat())
             .set_header("API-Key", &self.secret)
             .set_header("API-Sign", &self.sign.as_ref().unwrap())
             .body_form(&data)?
